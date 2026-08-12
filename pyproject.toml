@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "atlas-context"
+version = "0.1.0"
+description = "Queryable project memory for coding agents. A CLAUDE.md that scales."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Sai Nikhil Kunapareddy" }]
+keywords = ["mcp", "memory", "coding-agents", "claude-code", "rag"]
+
+# Core is deliberately dependency-free: stdlib sqlite3 + FTS5 does the work.
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2.0"]
+embeddings = ["sentence-transformers>=3.0", "numpy>=1.24"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+atlas = "atlas.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/atlas"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Atlas's own store. The index is a derived artifact; facts are worth keeping,
+# so `atlas export` them if you want that in git.
+.atlas/
