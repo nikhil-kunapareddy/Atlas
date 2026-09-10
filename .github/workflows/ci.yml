@@ -26,16 +26,28 @@ jobs:
         with:
           enable-cache: true
 
+      # An explicit venv on the matrix interpreter. `uv pip install --system`
+      # fails on both runners under PEP 668, and without `--python` here uv
+      # picks whatever Python the image happens to ship — which silently made
+      # every matrix entry test the same version.
+      - name: Create environment
+        run: uv venv --python ${{ matrix.python }}
+
       - name: Install
         # `all` minus the heavy media models: transcription is exercised through
         # its graceful-degradation path in CI, not by downloading Whisper.
-        run: uv pip install --system -e ".[dev,pdf,sheets,images,office,mcp]"
+        run: uv pip install -e ".[dev,pdf,sheets,images,office,mcp]"
+
+      - name: Confirm the interpreter matches the matrix
+        run: |
+          uv run python -c "import sys; print(sys.version)"
+          uv run python -c "import sys; assert sys.version.startswith('${{ matrix.python }}'), sys.version"
 
       - name: Lint
-        run: uv run --no-project ruff check src tests
+        run: uv run ruff check src tests scripts
 
       - name: Test
-        run: uv run --no-project pytest -p no:warnings
+        run: uv run pytest -p no:warnings
 
   minimal:
     name: no optional dependencies
@@ -43,9 +55,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Create environment
+        run: uv venv --python 3.12
 
       - name: Install core only
-        run: uv pip install --system -e "." pytest
+        run: uv pip install -e "." pytest
 
       # The promise is that a folder always produces a graph. With nothing
       # optional installed, building must still succeed and report what it
@@ -56,14 +73,10 @@ jobs:
           printf '# Notes\n\nInvoice INV-2024-0912 for $42,500.00 due 2024-09-30.\n' > /tmp/demo/notes.md
           printf 'id,name,email\n1,Acme,ops@acme.example\n' > /tmp/demo/data.csv
           head -c 2048 /dev/urandom > /tmp/demo/photo.jpg
-          python -m atlas.cli /tmp/demo
-          python -m atlas.cli graph --store /tmp/demo
-          python -m atlas.cli neighbors ent:identifier:inv-2024-0912 \
+          uv run atlas /tmp/demo
+          uv run atlas graph --store /tmp/demo
+          uv run atlas neighbors ent:identifier:inv-2024-0912 \
             --store /tmp/demo --direction in
-        env:
-          PYTHONPATH: src
 
       - name: Core test suite
-        run: python -m pytest tests/test_entities.py tests/test_graph_store.py -p no:warnings
-        env:
-          PYTHONPATH: src
+        run: uv run pytest tests/test_entities.py tests/test_graph_store.py -p no:warnings
