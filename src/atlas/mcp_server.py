@@ -16,6 +16,8 @@ from mcp.server import MCPServer
 from . import __version__
 from .config import GLOBAL_SCOPE, PROJECT_SCOPE, find_project_root, project_name
 from .indexer import index_path
+from .mcp_graph import GRAPH_INSTRUCTIONS
+from .mcp_graph import register as register_graph_tools
 from .memory import forget as forget_fact
 from .memory import list_facts, remember, resolve_scope, set_pinned
 from .search import recall
@@ -33,14 +35,20 @@ Call `atlas_remember` when you learn something durable that a future session \
 would otherwise have to rediscover: a non-obvious command, a constraint, a \
 gotcha, a decision and its reason. Record the fact, not the transcript. Do not \
 record transient state ("the test is failing right now") or anything already \
-obvious from the code.\
+obvious from the code.
 """
+
+# The graph half of the server explains itself separately; clients see both.
+INSTRUCTIONS = f"{INSTRUCTIONS}\n\n{GRAPH_INSTRUCTIONS}"
 
 server: MCPServer = MCPServer(
     name="atlas",
     version=__version__,
     instructions=INSTRUCTIONS,
 )
+
+
+register_graph_tools(server)
 
 
 def _root() -> Path | None:

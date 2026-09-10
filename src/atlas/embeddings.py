@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import array
 import math
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Protocol, Sequence
+from typing import Protocol
 
 from .store import Store
 
@@ -66,7 +67,7 @@ def unpack(blob: bytes) -> array.array:
 
 
 def dot(a: Sequence[float], b: Sequence[float]) -> float:
-    return sum(x * y for x, y in zip(a, b))
+    return sum(x * y for x, y in zip(a, b, strict=True))
 
 
 def build_embeddings(
@@ -105,7 +106,7 @@ def build_embeddings(
                 "model = excluded.model, dim = excluded.dim, vec = excluded.vec",
                 [
                     (kind, int(r["id"]), embedder.name, embedder.dim, pack(v))
-                    for r, v in zip(batch, vectors)
+                    for r, v in zip(batch, vectors, strict=True)
                 ],
             )
             written += len(batch)

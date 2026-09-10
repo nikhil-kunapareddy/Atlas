@@ -48,3 +48,34 @@ def repo(tmp_path):
     )
     (root / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00binary")
     return root
+
+
+@pytest.fixture
+def graph(project_store):
+    """An empty graph sharing the project store's connection."""
+    from atlas.graph import GraphStore
+
+    return GraphStore(project_store.conn)
+
+
+@pytest.fixture
+def corpus(tmp_path):
+    """A small multimodal folder: markdown, PDF, CSV, image, audio."""
+    import fixtures
+
+    return fixtures.make_corpus(tmp_path / "corpus")
+
+
+@pytest.fixture
+def built(corpus, tmp_path):
+    """`corpus`, converted to a graph. Yields (root, store, graph)."""
+    from atlas.build import build
+    from atlas.extract import ExtractOptions
+    from atlas.graph import GraphStore
+    from atlas.store import Store
+
+    store = Store(corpus / ".atlas" / "store.db", "project")
+    graph_store = GraphStore(store.conn)
+    build(corpus, store, graph_store, ExtractOptions(transcribe=False, keyframes=0))
+    yield corpus, store, graph_store
+    store.close()

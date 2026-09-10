@@ -15,9 +15,9 @@ of pinning is "the agent should know this regardless of what it asked".
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from .config import GLOBAL_SCOPE, PROJECT_SCOPE
 from .store import Store, open_stores
@@ -116,7 +116,7 @@ def _normalise(rows: Sequence[tuple[float, object]]) -> list[tuple[float, object
     lo, hi = min(scores), max(scores)
     span = hi - lo
     out = []
-    for score, payload in zip(scores, [r[1] for r in rows]):
+    for score, payload in zip(scores, [r[1] for r in rows], strict=True):
         norm = 1.0 if span <= 0 else (score - lo) / span
         # Keep a floor so a sole result doesn't collapse to zero.
         out.append((0.35 + 0.65 * norm, payload))

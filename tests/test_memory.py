@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from atlas.memory import export_markdown, remember, similarity
-from atlas.store import Store
 
 
 def test_remember_creates_a_fact(project_store):

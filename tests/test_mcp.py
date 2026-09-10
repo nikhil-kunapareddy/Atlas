@@ -11,7 +11,7 @@ import pytest
 
 pytest.importorskip("mcp", reason="needs the mcp extra")
 
-from atlas import mcp_server as m  # noqa: E402
+from atlas import mcp_server as m
 
 
 @pytest.fixture(autouse=True)

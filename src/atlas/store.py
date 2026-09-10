@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence
 
 from .config import (
     GLOBAL_SCOPE,
@@ -151,7 +151,7 @@ class Store:
     def close(self) -> None:
         self.conn.close()
 
-    def __enter__(self) -> "Store":
+    def __enter__(self) -> Store:
         return self
 
     def __exit__(self, *exc) -> None:
@@ -263,7 +263,7 @@ class Store:
         self.delete_file_chunks(file_id)
         self.conn.execute("DELETE FROM files WHERE id = ?", (file_id,))
 
-    def add_chunks(self, file_id: int, chunks: Sequence["ChunkInput"]) -> int:
+    def add_chunks(self, file_id: int, chunks: Sequence[ChunkInput]) -> int:
         """Insert chunks and their FTS rows. Returns the number written."""
         for chunk in chunks:
             cur = self.conn.execute(

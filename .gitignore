@@ -1,11 +1,29 @@
-.venv/
+# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
 build/
-.pytest_cache/
+dist/
+.eggs/
 
-# Atlas's own store. The index is a derived artifact; facts are worth keeping,
-# so `atlas export` them if you want that in git.
+# Environments
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Atlas stores — a built graph is derived data, never committed
 .atlas/
+
+# Generated test corpora — reproduce with scripts/make_corpus.py
+benchmark-corpus/
+
+# OS
+.DS_Store

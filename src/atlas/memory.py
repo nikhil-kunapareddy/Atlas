@@ -11,9 +11,9 @@ and without dedupe a memory store degenerates into fifty phrasings of one fact.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from .config import GLOBAL_SCOPE, PROJECT_SCOPE, find_project_root
 from .store import Fact, Store, open_store, open_stores
@@ -30,8 +30,7 @@ TOKEN = re.compile(r"[a-z0-9_]+")
 # Stopwords only for the similarity check, so "run tests with pytest" and
 # "tests are run with pytest" compare as near-identical.
 NOISE = frozenset(
-    "a an the is are was were be to of in on for with and or not this that it its "
-    "you your we our i my use uses used using do does don't should always never".split()
+    ["a", "an", "the", "is", "are", "was", "were", "be", "to", "of", "in", "on", "for", "with", "and", "or", "not", "this", "that", "it", "its", "you", "your", "we", "our", "i", "my", "use", "uses", "used", "using", "do", "does", "don't", "should", "always", "never"]
 )
 
 

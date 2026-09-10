@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: py${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        # `all` minus the heavy media models: transcription is exercised through
+        # its graceful-degradation path in CI, not by downloading Whisper.
+        run: uv pip install --system -e ".[dev,pdf,sheets,images,office,mcp]"
+
+      - name: Lint
+        run: uv run --no-project ruff check src tests
+
+      - name: Test
+        run: uv run --no-project pytest -p no:warnings
+
+  minimal:
+    name: no optional dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install core only
+        run: uv pip install --system -e "." pytest
+
+      # The promise is that a folder always produces a graph. With nothing
+      # optional installed, building must still succeed and report what it
+      # could not read — so this job guards the degradation path directly.
+      - name: Build a folder with no extras installed
+        run: |
+          mkdir -p /tmp/demo
+          printf '# Notes\n\nInvoice INV-2024-0912 for $42,500.00 due 2024-09-30.\n' > /tmp/demo/notes.md
+          printf 'id,name,email\n1,Acme,ops@acme.example\n' > /tmp/demo/data.csv
+          head -c 2048 /dev/urandom > /tmp/demo/photo.jpg
+          python -m atlas.cli /tmp/demo
+          python -m atlas.cli graph --store /tmp/demo
+          python -m atlas.cli neighbors ent:identifier:inv-2024-0912 \
+            --store /tmp/demo --direction in
+        env:
+          PYTHONPATH: src
+
+      - name: Core test suite
+        run: python -m pytest tests/test_entities.py tests/test_graph_store.py -p no:warnings
+        env:
+          PYTHONPATH: src

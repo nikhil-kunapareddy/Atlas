@@ -12,23 +12,15 @@ import hashlib
 import os
 import subprocess
 import time
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Iterator
 
 from .chunker import chunk_text, read_text, should_index
 from .store import Store
 
 DEFAULT_IGNORE_DIRS = frozenset(
-    """
-    .git .hg .svn .atlas
-    node_modules bower_components vendor
-    .venv venv env .env virtualenv
-    __pycache__ .mypy_cache .pytest_cache .ruff_cache .tox .nox
-    dist build out target .next .nuxt .parcel-cache .turbo .svelte-kit
-    .idea .vscode .gradle .terraform
-    coverage htmlcov .cache
-    """.split()
+    [".git", ".hg", ".svn", ".atlas", "node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".env", "virtualenv", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".nox", "dist", "build", "out", "target", ".next", ".nuxt", ".parcel-cache", ".turbo", ".svelte-kit", ".idea", ".vscode", ".gradle", ".terraform", "coverage", "htmlcov", ".cache"]
 )
 
 ProgressFn = Callable[[str], None]

@@ -19,16 +19,7 @@ MAX_FILE_BYTES = 1_000_000
 # Extensions we never index. Anything else gets a binary sniff instead of a
 # guess, so unusual-but-textual files (.env.example, Dockerfile.prod) still land.
 BINARY_EXTENSIONS = frozenset(
-    """
-    .png .jpg .jpeg .gif .bmp .ico .webp .tif .tiff .svgz .heic .avif
-    .mp3 .wav .flac .ogg .m4a .aac .mp4 .mov .avi .mkv .webm .wmv
-    .zip .tar .gz .bz2 .xz .7z .rar .jar .war .whl .egg .dmg .iso
-    .pdf .doc .docx .xls .xlsx .ppt .pptx .odt .ods
-    .so .dylib .dll .exe .bin .o .a .obj .class .pyc .pyo .wasm
-    .db .sqlite .sqlite3 .mdb .parquet .avro .pkl .npy .npz .h5 .pt .pth .safetensors
-    .ttf .otf .woff .woff2 .eot
-    .lock
-    """.split()
+    [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp", ".tif", ".tiff", ".svgz", ".heic", ".avif", ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar", ".jar", ".war", ".whl", ".egg", ".dmg", ".iso", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".so", ".dylib", ".dll", ".exe", ".bin", ".o", ".a", ".obj", ".class", ".pyc", ".pyo", ".wasm", ".db", ".sqlite", ".sqlite3", ".mdb", ".parquet", ".avro", ".pkl", ".npy", ".npz", ".h5", ".pt", ".pth", ".safetensors", ".ttf", ".otf", ".woff", ".woff2", ".eot", ".lock"]
 )
 
 MARKDOWN_HEADING = re.compile(r"^\s{0,3}(#{1,6})\s+(.*\S)")

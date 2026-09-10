@@ -1,7 +1,12 @@
 """Command line interface.
 
-The CLI is how a human sets Atlas up and inspects what the agents have been
-writing. Day to day the agents talk to the MCP server instead.
+Two surfaces share one tool. `atlas <folder>` builds a graph out of a directory
+and everything under `cli_graph.py` queries it; the commands in this file manage
+the fact store that agents read and write. They live in the same database and
+the same process, so `atlas status` can describe both.
+
+The bare form is the headline: `atlas ~/research` is shorthand for
+`atlas build ~/research`, resolved in `main()` before argparse sees it.
 """
 
 from __future__ import annotations
@@ -12,7 +17,7 @@ import os
 import sys
 from pathlib import Path
 
-from . import __version__
+from . import __version__, cli_graph
 from .config import (
     GLOBAL_SCOPE,
     PROJECT_SCOPE,
@@ -364,13 +369,19 @@ def _ago(ts: float) -> str:
 # -- parser ----------------------------------------------------------------
 
 
+KNOWN_COMMANDS: set[str] = set()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="atlas",
-        description="Queryable project memory for coding agents.",
+        description="Turn a folder into a graph your agent can query.",
+        epilog="Start with:  atlas <folder>",
     )
     parser.add_argument("--version", action="version", version=f"atlas {__version__}")
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
+
+    cli_graph.register(sub)
 
     def scope_arg(p: argparse.ArgumentParser, help_text: str) -> None:
         p.add_argument(
@@ -448,12 +459,31 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("mcp", help="run the MCP server on stdio")
     p.set_defaults(func=cmd_mcp)
 
+    KNOWN_COMMANDS.update(sub.choices)
     return parser
+
+
+def _expand_default_command(argv: list[str]) -> list[str]:
+    """Rewrite `atlas <folder>` as `atlas build <folder>`.
+
+    Only when the first argument is not a known command and does name a real
+    directory — so a typo like `atlas serach` still gets argparse's "invalid
+    choice" error rather than being misread as a path.
+    """
+    if not argv or argv[0].startswith("-") or argv[0] in KNOWN_COMMANDS:
+        return argv
+    try:
+        if Path(argv[0]).expanduser().is_dir():
+            return ["build", *argv]
+    except OSError:
+        pass
+    return argv
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    args = parser.parse_args(_expand_default_command(raw))
     try:
         return int(args.func(args) or 0)
     except KeyboardInterrupt:
